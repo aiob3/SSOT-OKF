@@ -1,5 +1,5 @@
-# SSOT GOVERNED | OKF-CONFORMANT [Profile v0]
-Onde seu método resolve melhor o problema da compactação
+# SSOT GOVERNED | OKF-CONFORMANT 
+[Profile v0]
 
 source: http://ssot.com.br/ns/core/#ssot-okf-profile
 - schema:cvh:ssot.com.br/ns/cvh#profile
