@@ -1,59 +1,49 @@
+<!-- generated-by: harness/deja_vu/scripts/homologate.py; source: .work/report.json -->
 # Evidência de homologação — Deja-vu v0.16.4
 
-- **Execução:** 2026-07-30T20:53:09-03:00
-- **Ambiente:** Linux amd64, project-owned, fontes sintéticas
+- **Execução UTC:** 2026-07-31T00:32:40.229406Z
+- **Ambiente:** synthetic-project-owned
 - **Veredito:** PASS
+- **Relatório local:** `.work/report.json` (SHA-256 `e9dec410befb05731d36c8b18e8182a01cc73cf5fa6aa3eeca428f831110429c`)
 
 ## Release
 
-- Asset: `deja-vu_0.16.4_linux_amd64.tar.gz`
-- SHA-256: `66825876fbc4eee2503fb50eb51200b534cc48d1978b5c3621db3133a640b390`
-- Checksum publicado: verificado
-- GitHub build attestation: verificada
-- SBOM SPDX: presente, parseável e com SHA-256 publicado `12d02570caf6a848173fa1b4322f81d1df3a88cac3375df3963f1820cf622565`
+- Archive: `deja-vu_0.16.4_linux_amd64.tar.gz`; SHA-256 `66825876fbc4eee2503fb50eb51200b534cc48d1978b5c3621db3133a640b390`; checksum verificado.
+- Attestation do archive: `verified`; repositório `vshulcz/deja-vu`.
+- Identidade sanitizada: `https://github.com/vshulcz/deja-vu/.github/workflows/release.yml@refs/tags/v0.16.4`; source digest `f5f8da0a98100f043857243098aaa0ac82df41c2`.
+- SBOM: `deja-vu_0.16.4_linux_amd64.tar.gz.spdx.json`; SHA-256 `12d02570caf6a848173fa1b4322f81d1df3a88cac3375df3963f1820cf622565`; `SPDX-2.3` validado e ligado ao digest do archive.
+- Não foi publicada/exigida attestation separada para o SBOM; sua evidência é checksum + estrutura SPDX.
 
-## Fontes
+## Qualidade e recuperação
 
-| Harness | Sessões | Mensagens | Redactions |
-|---|---:|---:|---:|
-| Claude Code | 1 | 2 | 1 |
-| Codex | 1 | 2 | 0 |
-| Copilot | 1 | 2 | 0 |
-| Hermes | 1 | 2 | 0 |
+- unittest: PASS.
+- ruff: PASS.
+- claude: 2/2 no tier `exact`.
+- codex: 2/2 no tier `exact`.
+- copilot: 2/2 no tier `exact`.
+- hermes: 2/2 no tier `exact`.
 
-## Recuperação
+## Critérios
 
-As oito consultas pré-registradas retornaram a sessão esperada no tier `exact`:
+| Critério | Resultado |
+|---|---|
+| `version_pinned` | PASS |
+| `synthetic_sources_exact` | PASS |
+| `retrieval_8_of_8_exact` | PASS |
+| `unicode` | PASS |
+| `negative_is_not_claimed` | PASS |
+| `redaction` | PASS |
+| `sources_unchanged` | PASS |
+| `live_configs_unchanged` | PASS |
+| `mcp_unwired` | PASS |
+| `project_unittest` | PASS |
+| `ruff` | PASS |
 
-- Claude Code: 2/2;
-- Codex: 2/2;
-- Copilot: 2/2;
-- Hermes: 2/2.
+## Limite de rede
 
-Todos os hits aceitos declararam `source.origin=local` e `source.instance=ssot-okf-homologation`.
+O Deja recebeu `DEJA_OFFLINE=1`; `doctor` recebeu `--offline`; buscas receberam `--no-embed`.
+Não houve sandbox/observador de egress disponível, portanto este relatório não afirma egress zero.
 
-Consultas com `ação`, `canário`, `âmbar`, `lápis` e `pêssego` preservaram Unicode. A consulta negativa não produziu hit contabilizável.
+## Gate
 
-## Segurança e isolamento
-
-- a credencial sintética foi redigida e não apareceu no índice nem na saída pesquisável;
-- os hashes das quatro fontes permaneceram idênticos;
-- os hashes das configurações reais existentes permaneceram idênticos;
-- o diagnóstico encontrou todas as configurações MCP como `config-missing` no HOME isolado;
-- recall e embeddings permaneceram `off`;
-- nenhum comando de instalação, escrita de nota, sync, share, hook ou auto-recall foi executado;
-- o único acesso de rede foi para baixar e verificar os artefatos públicos da release.
-
-## Reproduzir
-
-```bash
-python -m unittest harness/deja_vu/tests/test_homologate.py -v
-python harness/deja_vu/scripts/homologate.py
-```
-
-O relatório detalhado é regenerado localmente em `.work/report.json` e não é versionado.
-Após limpeza total e nova execução, o relatório foi byte-idêntico: SHA-256 `1c3f453e4506c36223ad92220294c1d1f96055a2a80472fc7a52936485f12bad`.
-
-## Próximo gate
-
-Pendente: autorização explícita para apontar uma nova execução a históricos reais em modo read-only. Este PASS não autoriza fontes reais, instalação global, MCP, `remember`, hooks ou auto-recall.
+Este resultado cobre somente fixtures sintéticas project-owned. Não autoriza fontes reais, instalação global, MCP, `remember`, hooks ou auto-recall.
