@@ -1,9 +1,11 @@
-# PRD — Homologação do Deja-vu no harness SSOT-OKF
+# PRD — Expansão e continuidade do Deja-vu no harness SSOT-OKF
 
-- **Status:** fase sintética endurecida e re-homologada — PASS
+- **Status:** fase 4 concluída (MCP wrapper filtrado + homologação do binding); fase 5 pendente
 - **Produto:** capacidade de valor agregado do `aiob3/SSOT-OKF`
 - **Decisão vigente:** evidência histórica transversal, sem autoridade canônica
-- **Próximo gate:** autorização separada para fontes reais em modo read-only
+- **Próximo gate:** decisão sobre indexação incremental manual (fase 5)
+
+> Iteração recursiva a partir do épico `ssot-okf-experiment_research.md`. Esta revisão incorpora o que foi aprendido executando a homologação sintética e o preview read-only sobre históricos reais.
 
 ## Problem Statement
 
@@ -22,7 +24,7 @@ Agregar o Deja-vu ao SSOT-OKF como plano local de evidência histórica. A prime
 5. valida busca, proveniência, Unicode, redaction, integridade e reversibilidade;
 6. produz um relatório rastreável de passe ou falha, com timestamp UTC e hashes das autoridades.
 
-A homologação sintética não instala o Deja-vu globalmente, não lê históricos reais, não altera configuração de agentes e não conecta MCP.
+A homologação sintética não instala o Deja-vu globalmente, não altera configuração de agentes e não conecta MCP. A fase 3 estendeu esse harness para ler os stores reais em modo read-only, com todas as escritas confinadas a `.work/real`.
 
 ## User Stories
 
@@ -44,6 +46,10 @@ A homologação sintética não instala o Deja-vu globalmente, não lê históri
 16. Como operador, quero remover o laboratório com um comando, para garantir reversibilidade.
 17. Como operador, quero separar aprovação documental de autorização de fontes reais e MCP.
 18. Como agente futuro, quero um comando e uma suíte determinística, para repetir a homologação sem reinterpretar o processo.
+19. Como operador, quero consultar históricos reais sem que o Deja escreva neles, para preservar a integridade das fontes.
+20. Como operador, quero distinguir mudanças feitas pelo Deja de mudanças feitas por agentes vivos, para não gerar falso positivo de fuga.
+21. Como operador, quero que o endpoint MCP exponha apenas tools de leitura, para que o Hermes consulte sem poder escrever notas.
+22. Como operador, quero indexação incremental manual, para decidir quando atualizar a visão dos históricos.
 
 ## Implementation Decisions
 
@@ -59,7 +65,9 @@ A homologação sintética não instala o Deja-vu globalmente, não lê históri
 - O ambiente do Deja é allowlisted e fixa HOME, XDG cache/config/data/state e TMPDIR dentro de `.work`; remove opt-out de redaction e fixa recall e embeddings como `off`.
 - O ambiente do `gh` é separado e recebe somente PATH, diretórios isolados e variáveis de transporte necessárias; tokens e demais segredos não são repassados ao Deja.
 - Nenhum comando `install`, `remember`, `sync`, `share`, `embed` ou `update` é executado.
-- Indexação real e conexão MCP são gates posteriores e independentes.
+- Na fase 3, o binário real aponta para `~/.hermes/state.db`, `~/.claude/projects`, `~/.codex` (não `~/.codex/sessions`) e `~/.copilot`; todas as escritas ficam em `.work/real`.
+- A prova de read-only usa diff nomeado de tamanho/mtime/inode antes/depois, com allowlist de ruído volátil (`tmp/`, `*.sqlite-wal`, `*.sqlite-shm`, `logs_2.sqlite`, `config.json`) de harnesses vivos.
+- Conexão MCP é gate posterior e independente; a tool `remember` permanece fora do perfil de binding inicial.
 - Histórico recuperado é evidência não confiável; instruções canônicas continuam fora do índice.
 
 ## Testing Decisions
@@ -75,6 +83,7 @@ A homologação sintética não instala o Deja-vu globalmente, não lê históri
 - Os hashes das fontes devem permanecer idênticos; o snapshot antes/depois deve detectar alteração, remoção ou criação em todos os caminhos de configuração monitorados, inclusive XDG.
 - O diagnóstico deve conter Claude Code, Codex, Copilot e Hermes em estado explícito `config-missing` ou `not-installed`; estados ausentes ou desconhecidos falham.
 - Sem sandbox/observador de rede, a homologação registra somente `DEJA_OFFLINE`, `--offline` e `--no-embed`; não afirma egress zero.
+- A fase 3 usa `preview_real.py` com o mesmo binário homologado, mas com `DEJA_*_ROOT` apontando para os stores reais; o relatório JSON confirma `sources_unchanged: true` quando nenhum arquivo real é alterado.
 
 ## Acceptance Criteria
 
@@ -96,6 +105,15 @@ Os itens de execução abaixo só podem ser marcados por um report da versão en
 - [x] Auto-recall, hooks e escrita de notas permaneceram desabilitados.
 - [x] unittest e ruff passaram sem gerar bytecode.
 - [x] Report e resultado gerado ficaram ligados por SHA-256.
+- [x] Fase 3 — preview read-only sobre stores reais executado com sucesso.
+- [x] Fase 3 — diff nomeado de fontes reais confirma zero alterações persistentes do Deja.
+- [x] Fase 3 — ruído volátil de harnesses vivos identificado e isolado do gate.
+- [x] Fase 3 — `DEJA_CODEX_ROOT` corrigido para `~/.codex` (bug `sessions=0` resolvido).
+- [x] Fase 4 — wrapper MCP stdio que filtra `remember` e expõe apenas `recall`, `recall_context`, `blame`.
+- [x] Fase 4 — binding MCP no Hermes com env isolado e sem `remember`.
+- [x] Fase 4 — homologação do binding: chamada `recall` funciona e `remember` é recusada com erro JSON-RPC `-32601`.
+- [ ] Fase 5 — decisão sobre indexação incremental (manual vs. watcher/cron read-only).
+- [ ] Fase 6 — interface do operador sobre Traycer (PRD separado).
 
 ## Plano de trabalho
 
@@ -104,35 +122,34 @@ Os itens de execução abaixo só podem ser marcados por um report da versão en
 | 0 | Pesquisa e épico reposicionados | concluída | adoção no SSOT-OKF |
 | 1 | PRD e seam de teste | concluída | implementação sintética |
 | 2 | Homologação sintética Deja-vu | endurecida e reexecutada — PASS | decisão sobre fontes reais |
-| 3 | Indexação de fontes reais | pendente | autorização explícita de scope + config |
-| 4 | MCP manual read-only | pendente | binding e policy que excluam `remember` |
-| 5 | Operação assistida | pendente | decisão separada sobre recall por demanda |
+| 3 | Preview read-only sobre fontes reais | concluída — PASS | autorização para MCP |
+| 4 | MCP wrapper filtrado + binding Hermes | concluída — PASS | decisão sobre indexação incremental |
+| 5 | Indexação incremental manual | pendente | decisão sobre watcher/cron |
 | 6 | Interface do operador sobre Traycer | PRD futuro | não depende de substituir Traycer |
 
 ### Gate atual
 
-A execução endurecida registrada em `docs/HOMOLOGATION-RESULTS.md` autoriza concluir que a fase sintética passou. Esse PASS não autoriza:
+A execução endurecida registrada em `docs/HOMOLOGATION-RESULTS.md` autoriza concluir que as fases sintética, de fontes reais e de binding MCP passaram. A fase 4 provou que o wrapper filtra `remember` e delega apenas tools de leitura. Esse PASS não autoriza:
 
-- ler históricos reais;
 - instalar o Deja-vu globalmente;
 - alterar configuração do Hermes;
-- conectar MCP;
+- conectar MCP sem o wrapper `scripts/mcp_wrapper.py`;
 - habilitar `remember`, hooks ou auto-recall;
 - promover evidência para memória curada ou documentação canônica.
 
 ## Out of Scope
 
-- Interface Kandev/UI nesta entrega.
+- Interface Kandev/UI nesta entrega (PRD separado na fase 6).
 - Substituição ou alteração do Traycer.
 - Temporal, NPCPy ou JCode.
 - Instalação global do Deja-vu.
-- Históricos reais na fase sintética.
-- Wiring MCP.
+- Wiring MCP sem wrapper filtrado.
 - Tool `remember` e curated notes.
 - Auto-recall, hooks, plugins e captura pre-compact.
 - Embeddings ou serviços de modelo.
 - Sync, share, SSH e exportação.
 - Deployment, DNS, VPS, Docker ou Traefik.
+- Watcher/cron de indexação automática (fase 5 decide).
 
 ## Further Notes
 
@@ -141,3 +158,5 @@ A execução endurecida registrada em `docs/HOMOLOGATION-RESULTS.md` autoriza co
 - O fluxo de autoridade permanece `scope → config → binding → dispatch`.
 - Aprovação documental nunca implica dispatch.
 - Traycer continua motor documental e de planejamento; a futura UI do operador é uma capacidade separada.
+- O preview read-only provou que o Deja não é o único escritor nos stores; harnesses vivos geram ruído volátil que deve ser ignorado pelo gate de integridade.
+- O endpoint MCP stdio já está provado com `recall`, `recall_context`, `blame` e `remember`; a fase 4 filtra a última.

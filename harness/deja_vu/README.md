@@ -25,10 +25,28 @@ python -B harness/deja_vu/scripts/homologate.py --clean
 
 `--clean` remove somente `harness/deja_vu/.work`, propaga falhas e confirma a ausência final. A reversibilidade declarada cobre artefatos da homologação; caches criados por outras invocações Python ficam fora desse contrato. Os comandos documentados desabilitam bytecode para não criar `__pycache__`.
 
+## MCP read-only
+
+O wrapper `scripts/mcp_wrapper.py` expõe apenas `recall`, `recall_context` e `blame`, rejeitando `remember` com erro JSON-RPC. Configure o Hermes (ou outro harness) para apontar para ele, não diretamente para `deja mcp`:
+
+```json
+{
+  "mcpServers": {
+    "deja-ssot": {
+      "command": "python3",
+      "args": ["-B", "/data/SSOT-OKF/harness/deja_vu/scripts/mcp_wrapper.py"]
+    }
+  }
+}
+```
+
+O wrapper usa o mesmo ambiente isolado do preview read-only: HOME, XDG, cache, índice e TMPDIR dentro de `.work/real`, com `DEJA_OFFLINE=1`, `DEJA_RECALL=off` e `DEJA_EMBED=off`.
+
 ## Limites atuais
 
-- não instala globalmente nem lê históricos reais;
-- não conecta MCP;
+- não instala globalmente;
+- lê históricos reais somente em modo read-only com índice isolado em `.work/real`;
+- não conecta MCP sem o wrapper filtrado;
 - não executa `remember`, sync, share, embeddings, hooks ou auto-recall;
 - entrega ao Deja somente ambiente allowlisted, `DEJA_OFFLINE=1` e buscas com `--no-embed`;
 - não promove histórico para instrução canônica;
