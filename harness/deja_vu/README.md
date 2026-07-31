@@ -1,6 +1,6 @@
 # Deja-vu — homologação SSOT-OKF
 
-Capacidade project-owned para homologar busca histórica transversal sem ler stores reais, alterar configurações de agentes ou instalar componentes globalmente.
+Capacidade project-owned para homologar busca histórica transversal sintética, sem alterar configurações de agentes ou instalar componentes globalmente. O código de preview/binding para stores reais existe, mas não há homologação funcional versionada dessas fases.
 
 ## Executar
 
@@ -27,7 +27,7 @@ python -B harness/deja_vu/scripts/homologate.py --clean
 
 ## MCP read-only
 
-O wrapper `scripts/mcp_wrapper.py` expõe apenas `recall`, `recall_context` e `blame`, rejeitando `remember` com erro JSON-RPC. Configure o Hermes (ou outro harness) para apontar para ele, não diretamente para `deja mcp`:
+O wrapper `scripts/mcp_wrapper.py` foi implementado para expor apenas `recall`, `recall_context` e `blame`, rejeitando `remember` com erro JSON-RPC. O bloco é o mapping esperado para o gate futuro; não configure um harness real nesta etapa:
 
 ```json
 {
@@ -40,17 +40,18 @@ O wrapper `scripts/mcp_wrapper.py` expõe apenas `recall`, `recall_context` e `b
 }
 ```
 
-O wrapper usa o mesmo ambiente isolado do preview read-only: HOME, XDG, cache, índice e TMPDIR dentro de `.work/real`, com `DEJA_OFFLINE=1`, `DEJA_RECALL=off` e `DEJA_EMBED=off`.
+O wrapper foi implementado para usar o mesmo ambiente isolado do preview: HOME, XDG, cache, índice e TMPDIR dentro de `.work/real`, com `DEJA_OFFLINE=1`, `DEJA_RECALL=off` e `DEJA_EMBED=off`. Configuração presente não é prova de binding funcional nem autorização para conexão real.
 
 ## Limites atuais
 
 - não instala globalmente;
-- lê históricos reais somente em modo read-only com índice isolado em `.work/real`;
+- preview/binding real estão implementados, mas a leitura funcional de históricos reais ainda não está homologada;
 - não conecta MCP sem o wrapper filtrado;
 - não executa `remember`, sync, share, embeddings, hooks ou auto-recall;
 - entrega ao Deja somente ambiente allowlisted, `DEJA_OFFLINE=1` e buscas com `--no-embed`;
 - não promove histórico para instrução canônica;
 - não há sandbox/observador de egress disponível: os controles acima não provam egress zero;
+- o gate de binding futuro assume host local cooperativo: não há defesa atômica contra troca de paths entre validação e execução, fdexec ou sandbox;
 - não é alegada attestation separada do SBOM; a evidência do SBOM é checksum publicado, estrutura SPDX e vínculo com o digest do archive.
 
-O próximo gate está no PRD. O resultado sintético não autoriza indexação real.
+O próximo gate está no PRD. `HOMOLOGATION-RESULTS.md` documenta somente a evidência sintética: não autoriza leitura real, binding MCP funcional, indexação real, nem adoção.

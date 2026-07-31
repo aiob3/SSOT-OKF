@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import unittest
@@ -14,6 +15,7 @@ SPEC = importlib.util.spec_from_file_location("deja_mcp_wrapper", MODULE_PATH)
 assert SPEC and SPEC.loader
 wrapper = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(wrapper)
+REAL_INTEGRATION = os.environ.get("DEJA_INTEGRATION") == "1"
 
 
 def _roundtrip(messages: list[dict[str, object]], timeout: float = 30.0) -> list[dict[str, Any]]:
@@ -29,6 +31,18 @@ def _roundtrip(messages: list[dict[str, object]], timeout: float = 30.0) -> list
 
 
 class McpWrapperTests(unittest.TestCase):
+    def test_default_discovery_skips_real_roundtrips(self) -> None:
+        for name in (
+            "test_tools_list_exposes_only_read_only_tools",
+            "test_remember_is_rejected_with_jsonrpc_error",
+            "test_recall_delegates_to_real_binary",
+        ):
+            self.assertEqual(
+                getattr(getattr(type(self), name), "__unittest_skip__", False),
+                not REAL_INTEGRATION,
+            )
+
+    @unittest.skipUnless(REAL_INTEGRATION, "requer DEJA_INTEGRATION=1")
     def test_tools_list_exposes_only_read_only_tools(self) -> None:
         responses = _roundtrip([
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "test", "version": "0"}}},
@@ -40,6 +54,7 @@ class McpWrapperTests(unittest.TestCase):
         names = {tool["name"] for tool in tools}
         self.assertEqual(names, {"recall", "recall_context", "blame"})
 
+    @unittest.skipUnless(REAL_INTEGRATION, "requer DEJA_INTEGRATION=1")
     def test_remember_is_rejected_with_jsonrpc_error(self) -> None:
         responses = _roundtrip([
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "test", "version": "0"}}},
@@ -51,6 +66,7 @@ class McpWrapperTests(unittest.TestCase):
         self.assertEqual(error["code"], -32601)
         self.assertIn("read-only", error["message"])
 
+    @unittest.skipUnless(REAL_INTEGRATION, "requer DEJA_INTEGRATION=1")
     def test_recall_delegates_to_real_binary(self) -> None:
         responses = _roundtrip([
             {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {}, "clientInfo": {"name": "test", "version": "0"}}},
