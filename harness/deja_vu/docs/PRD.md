@@ -1,6 +1,6 @@
 # PRD — Expansão e continuidade do Deja-vu no harness SSOT-OKF
 
-- **Status:** fase 4 concluída (MCP wrapper filtrado + homologação do binding); fase 5 pendente
+- **Status:** fase 4 concluída e binding atestado no Hermes; fase 5 pendente
 - **Produto:** capacidade de valor agregado do `aiob3/SSOT-OKF`
 - **Decisão vigente:** evidência histórica transversal, sem autoridade canônica
 - **Próximo gate:** decisão sobre indexação incremental manual (fase 5)
@@ -112,6 +112,7 @@ Os itens de execução abaixo só podem ser marcados por um report da versão en
 - [x] Fase 4 — wrapper MCP stdio que filtra `remember` e expõe apenas `recall`, `recall_context`, `blame`.
 - [x] Fase 4 — binding MCP no Hermes com env isolado e sem `remember`.
 - [x] Fase 4 — homologação do binding: chamada `recall` funciona e `remember` é recusada com erro JSON-RPC `-32601`.
+- [x] Fase 4 — binding configurado no Hermes (`mcp_servers.deja-ssot`) e atestado com `hermes mcp test` e chamada real de `recall`.
 - [ ] Fase 5 — decisão sobre indexação incremental (manual vs. watcher/cron read-only).
 - [ ] Fase 6 — interface do operador sobre Traycer (PRD separado).
 
@@ -123,7 +124,7 @@ Os itens de execução abaixo só podem ser marcados por um report da versão en
 | 1 | PRD e seam de teste | concluída | implementação sintética |
 | 2 | Homologação sintética Deja-vu | endurecida e reexecutada — PASS | decisão sobre fontes reais |
 | 3 | Preview read-only sobre fontes reais | concluída — PASS | autorização para MCP |
-| 4 | MCP wrapper filtrado + binding Hermes | concluída — PASS | decisão sobre indexação incremental |
+| 4 | MCP wrapper filtrado + binding Hermes | concluída — PASS (binding atestado) | decisão sobre indexação incremental |
 | 5 | Indexação incremental manual | pendente | decisão sobre watcher/cron |
 | 6 | Interface do operador sobre Traycer | PRD futuro | não depende de substituir Traycer |
 
