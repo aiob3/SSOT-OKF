@@ -26,6 +26,10 @@ source: http://ssot.com.br/ns/core/#ssot-okf-profile
 
 ### This repository features tools, agents, and samples that demonstrate Knowledge Catalog features, and building context management, enrichment and retrieval solutions.
 
+## Harness capabilities
+
+- [Deja-vu homologation](harness/deja_vu/README.md): project-owned validation of cross-harness historical evidence, with explicit gates before real sources or MCP wiring.
+
 
 ## Getting Started
 
